@@ -40,6 +40,18 @@ resource "aws_s3_bucket" "public" {
   }
 }
 
+resource "aws_s3_bucket" "alb_log" {
+  bucket = "terraform-practice-wand-20200305-log"
+
+  lifecycle_rule {
+    enabled = true
+
+    expiration {
+      days = "180"
+    }
+  }
+}
+
 output "mykey_arn" {
   value = aws_kms_key.mykey.arn
 }
