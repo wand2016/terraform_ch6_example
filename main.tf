@@ -28,6 +28,51 @@ resource "aws_s3_bucket_public_access_block" "private" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_policy" "private" {
+  bucket = aws_s3_bucket.private.id
+  policy = data.aws_iam_policy_document.private.json
+}
+
+data "aws_iam_policy_document" "private" {
+  # SSE-KMSでない暗号化を禁止
+  statement {
+    sid = "DenyIncorrectEncryptionHeader"
+    effect = "Deny"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:PutObject"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.private.id}/*"]
+    condition {
+      test = "StringNotEquals"
+      variable = "s3:x-amz-server-side-encryption"
+      values = [
+        "aws:kms"
+      ]
+    }
+  }
+  # 暗号化されていないアップロードを禁止
+  statement {
+    sid = "DenyUnEncryptedObjectUploads"
+    effect = "Deny"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:PutObject"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.private.id}/*"]
+    condition {
+      test = "Null"
+      variable = "s3:x-amz-server-side-encryption"
+      values = [
+        "true"
+      ]
+    }
+  }
+}
+
+
 resource "aws_s3_bucket" "public" {
   bucket = "terraform-practice-wand-20200305-public"
   acl = "public-read"
