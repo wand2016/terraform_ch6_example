@@ -5,6 +5,7 @@ resource "aws_kms_key" "mykey" {
 
 resource "aws_s3_bucket" "private" {
   bucket = "terraform-practice-wand-20200305"
+  force_destroy = true
 
   versioning {
     enabled = true
