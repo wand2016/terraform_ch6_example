@@ -28,6 +28,18 @@ resource "aws_s3_bucket_public_access_block" "private" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket" "public" {
+  bucket = "terraform-practice-wand-20200305-public"
+  acl = "public-read"
+
+  cors_rule {
+    allowed_origins = ["https://example.com"]
+    allowed_methods = ["GET"]
+    allowed_headers = ["*"]
+    max_age_seconds = 3000
+  }
+}
+
 output "mykey_arn" {
   value = aws_kms_key.mykey.arn
 }
